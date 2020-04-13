@@ -2,15 +2,22 @@
 
 A simple tool for storing genealogy data and visualizing the tree.
 
+## Technologies
+
+- git
+- nodejs @ 12.16.1
+- mongodb 
+
 ## Installation & getting started
 
-> cd /some/path/you/like
-> git clone https://github.com/maximefabas/genealogy
-> cd genealogy
-> npm i
-> mkdir data && mkdir data/db
-> mongod --dbpath data/db
-> npm start
+```bash
+cd /some/path/you/like
+git clone https://github.com/maximefabas/genealogy
+cd genealogy
+npm i
+mkdir data && mkdir data/db
+mongod --dbpath data/db
+npm start
 
 ## Usage
 
