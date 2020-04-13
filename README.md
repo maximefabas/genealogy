@@ -6,7 +6,7 @@ A simple tool for storing genealogy data and visualizing the tree.
 
 - git
 - nodejs @ 12.16.1
-- mongodb 
+- mongodb @ 4.2.3
 
 ## Installation & getting started
 
