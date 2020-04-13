@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+  
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Genealogy - Add human</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/style.css">
+  </head>
+
+  <body>
+    <h1>Ajouter un aïeul</h1>
+    Prénom <input type="text" name="first-name" /><br />
+    Prénom usuel <input type="text" name="common-first-name" /><br />
+    Nom de naissance <input type="text" name="birth-last-name" /><br />
+    Nom <input type="text" name="last-name" /><br />
+    Genre <select name="gender">
+      <option value="">–</option>
+      <option value="F">F</option>
+      <option value="M">M</option>
+      <option value="NB">NB</option>
+    </select><br /><br />
+
+    Date de naissance <input type="date" name="birth-date" /><br />
+    Lieu de naissance <input type="text" name="birth-place" /><br />
+    Date de décès <input type="date" name="death-date" /><br />
+    Lieu de décès <input type="text" name="death-place" /><br /><br />
+
+    Parent 1 <select name="parent-1">
+      <option value="">–</option>
+    </select><br />
+    Parent 2 <select name="parent-2">
+      <option value="">–</option>
+    </select><br /><br />
+
+    <button id="cancel" onclick="cancelForm()">Annuler</button>
+    <button id="send" onclick="sendHuman()">Donner la vie à cet humain *</button>
+    <button id="kill" onclick="killHuman()">Tuer cet humain *</button><br />
+    <i style="font-size: .5rem;">* dans la base de données uniquement</i>
+
+    <div id="humans-list">
+    </div>
+
+    <script>
+      const state = {
+        humans: [],
+        editing: null
+      }
+
+      fetchAndPrefill()
+
+      async function fetchAndPrefill () {
+        await fetchAll()
+        fillTemplate()
+      }
+
+      async function fetchAll () {
+        // No error handling 😎
+        const res = await window.fetch('/api/list-humans')
+        const data = await res.json()
+        const humans = data.data
+        state.humans = [...humans]
+        return humans
+      }
+
+      function fillTemplate () {
+        const $parent1 = document.querySelector('select[name="parent-1"]')
+        const $parent2 = document.querySelector('select[name="parent-2"]')
+        const $humansList = document.querySelector('#humans-list')
+        const defaultOption = '<option value="">–</option>'
+        $parent1.innerHTML = defaultOption
+        $parent2.innerHTML = defaultOption
+        $humansList.innerHTML = ''
+        state.humans.forEach(human => {
+          const option = `<option value=${human._id}>${human.common_first_name || human.first_name} ${human.last_name || human.birth_last_name} (${human.birth_date})</option>`
+          const humanSummary = `<p onclick="triggerEdition('${human._id}')">
+            ${human.common_first_name || human.first_name} ${human.last_name || human.birth_last_name} (${human.gender})<br />
+            né·e ${human.first_name} ${human.birth_last_name}<br />
+            né·e le ${human.birth_date || '-'} à ${human.birth_place || '-'},<br />
+            ${human.death_date ? `décédé·e le ${human.death_date || '-'} à ${human.death_place || '-'}<br />` : ''}
+            enfant de ${getFullNameViaId(human.parent_1) || '-'} et de ${getFullNameViaId(human.parent_2) || '-'}<br />
+            <button onclick="triggerEdition('${human._id}')">Modifier</button>
+          </p>`
+          $parent1.innerHTML += option
+          $parent2.innerHTML += option
+          $humansList.innerHTML += humanSummary
+        })
+      }
+
+      function cancelForm () {
+        state.editing = null
+        const $pageTitle = document.querySelector('h1')
+        $pageTitle.innerHTML = 'Ajouter un aïeul'
+        document.querySelector('input[name="first-name"]').value = ''
+        document.querySelector('input[name="common-first-name"]').value = ''
+        document.querySelector('input[name="last-name"]').value = ''
+        document.querySelector('input[name="birth-last-name"]').value = ''
+        document.querySelector('select[name="gender"]').value = ''
+        document.querySelector('input[name="birth-date"]').value = ''
+        document.querySelector('input[name="birth-place"]').value = ''
+        document.querySelector('input[name="death-date"]').value = ''
+        document.querySelector('input[name="death-place"]').value = ''
+        document.querySelector('select[name="parent-1"]').value = ''
+        document.querySelector('select[name="parent-2"]').value = ''
+        document.querySelector('#send').innerHTML = 'Donner la vie à cet humain *'
+      }
+
+      async function sendHuman () {
+        const firstName = document.querySelector('input[name="first-name"]').value
+        const commonFirstName = document.querySelector('input[name="common-first-name"]').value
+        const lastName = document.querySelector('input[name="last-name"]').value
+        const birthLastName = document.querySelector('input[name="birth-last-name"]').value
+        const gender = document.querySelector('select[name="gender"]').value
+        const birthDate = document.querySelector('input[name="birth-date"]').value
+        const birthPlace = document.querySelector('input[name="birth-place"]').value
+        const deathDate = document.querySelector('input[name="death-date"]').value
+        const deathPlace = document.querySelector('input[name="death-place"]').value
+        const parent1 = document.querySelector('select[name="parent-1"]').value
+        const parent2 = document.querySelector('select[name="parent-2"]').value
+        const newHuman = {
+          first_name: firstName,
+          common_first_name: commonFirstName,
+          last_name: lastName,
+          birth_last_name: birthLastName,
+          gender,
+          birth_date: birthDate,
+          birth_place: birthPlace,
+          death_date: deathDate,
+          death_place: deathPlace,
+          parent_1: parent1,
+          parent_2: parent2
+        }
+
+        if (state.editing) {
+          const res = await window.fetch(`/api/edit-human/${state.editing}`, {
+            method: 'POST',
+            body: JSON.stringify(newHuman),
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          })
+          const { data } = await res.json()
+          state.humans = [
+            ...state.humans.filter(human => human._id !== state.editing),
+            data
+          ]
+          cancelForm()
+          fillTemplate()
+        } else {
+          const res = await window.fetch('/api/create-human', {
+            method: 'POST',
+            body: JSON.stringify(newHuman),
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          })
+          const { data } = await res.json()
+          state.humans = [...state.humans, data]
+          cancelForm()
+          fillTemplate()
+        }
+      }
+
+      async function killHuman () {
+        alert('Not functional yet.')
+      }
+
+      function getHumanViaId (id) {
+        const human = state.humans.find(human => human._id === id)
+        return human
+      }
+
+      function getFullNameViaId (id) {
+        const human = getHumanViaId(id)
+        if (!human) return
+        return `${human.common_first_name || human.first_name} ${human.last_name || human.birth_last_name}`
+      }
+
+      function triggerEdition (id) {
+        const human = getHumanViaId(id)
+        if (!human) return
+        state.editing = id
+        const $pageTitle = document.querySelector('h1')
+        $pageTitle.innerHTML = `Modification de ${human.first_name} ${human.last_name}`
+        document.querySelector('input[name="first-name"]').value = human.first_name
+        document.querySelector('input[name="common-first-name"]').value = human.common_first_name
+        document.querySelector('input[name="last-name"]').value = human.last_name
+        document.querySelector('input[name="birth-last-name"]').value = human.birt_last_name
+        document.querySelector('select[name="gender"]').value = human.gender
+        document.querySelector('input[name="birth-date"]').value = human.birth_date
+        document.querySelector('input[name="birth-place"]').value = human.birth_place
+        document.querySelector('input[name="death-date"]').value = human.death_date
+        document.querySelector('input[name="death-place"]').value = human.death_place
+        document.querySelector('select[name="parent-1"]').value = human.parent_1
+        document.querySelector('select[name="parent-2"]').value = human.parent_2
+        document.querySelector('#send').innerHTML = 'Changer le destin de cet humain *'
+        window.scrollTo(0, 0)
+      }
+    </script>
+  </body>
+
+</html>
