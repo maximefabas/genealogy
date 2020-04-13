@@ -17,7 +17,7 @@ cd genealogy
 npm i
 mkdir data && mkdir data/db
 mongod --dbpath data/db
-npm start
+npm start```
 
 ## Usage
 
