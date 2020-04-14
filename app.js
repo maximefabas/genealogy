@@ -27,9 +27,9 @@ app.use((req, res, next) => {
   next()
 })
 
-// Vizualisation
+// Visualisation
 app.get('/', (req, res, next) => {
-  res.redirect('/add.html')
+  res.redirect('/index.html')
 })
 
 // Add entries

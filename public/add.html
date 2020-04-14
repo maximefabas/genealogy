@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Genealogy - Add human</title>
     <link rel="stylesheet" type="text/css" href="/stylesheets/style.css">
+    <script type="text/javascript" src="/lib/moment-with-locales.js"></script>
   </head>
 
   <body>
@@ -42,11 +43,11 @@
     </div>
 
     <script>
+      moment.locale('fr')
       const state = {
         humans: [],
         editing: null
       }
-
       fetchAndPrefill()
 
       async function fetchAndPrefill () {
@@ -72,14 +73,29 @@
         $parent2.innerHTML = defaultOption
         $humansList.innerHTML = ''
         state.humans.forEach(human => {
-          const option = `<option value=${human._id}>${human.common_first_name || human.first_name} ${human.last_name || human.birth_last_name} (${human.birth_date})</option>`
-          const humanSummary = `<p onclick="triggerEdition('${human._id}')">
-            ${human.common_first_name || human.first_name} ${human.last_name || human.birth_last_name} (${human.gender})<br />
-            né·e ${human.first_name} ${human.birth_last_name}<br />
-            né·e le ${human.birth_date || '-'} à ${human.birth_place || '-'},<br />
-            ${human.death_date ? `décédé·e le ${human.death_date || '-'} à ${human.death_place || '-'}<br />` : ''}
-            enfant de ${getFullNameViaId(human.parent_1) || '-'} et de ${getFullNameViaId(human.parent_2) || '-'}<br />
-            <button onclick="triggerEdition('${human._id}')">Modifier</button>
+          const id = human._id
+          const commonFirstName = human.common_first_name
+          const firstName = human.first_name
+          const lastName = human.last_name
+          const birthLastName = human.birth_last_name
+          const gender = human.gender
+          const birthDate = human.birth_date
+          const readableBirthDate = moment(birthDate, 'YYYY-MM-DD').fromNow() //.format('D MMM YYYY')
+          const birthPlace = human.birth_place
+          const deathDate = human.death_date
+          const readableDeathDate = moment(deathDate, 'YYYY-MM-DD').fromNow() //.format('D MMM YYYY')
+          const deathPlace = human.death_place
+          const parent1 = human.parent_1
+          const parent2 = human.parent_2
+          const option = `<option value=${id}>
+            ${commonFirstName ||firstName} ${lastName ||birthLastName} (${readableBirthDate})
+          </option>`
+          const humanSummary = `<p onclick="triggerEdition('${id}')">
+            ${commonFirstName || firstName} ${lastName || birthLastName} (${gender}), né·e ${firstName} ${birthLastName}<br />
+            🐣 ${readableBirthDate || '-'} à ${birthPlace || '-'},<br />
+            ${deathDate ? `⚰️ ${readableDeathDate || '-'} à ${deathPlace || '-'}<br />` : ''}
+            👩‍👩‍👧‍👦 ${getFullNameViaId(parent1) || '-'}, ${getFullNameViaId(parent2) || '-'}<br />
+            <button onclick="triggerEdition('${id}')">Modifier</button>
           </p>`
           $parent1.innerHTML += option
           $parent2.innerHTML += option
