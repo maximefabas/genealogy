@@ -72,9 +72,14 @@ app.post('/api/edit-human/:id', (req, res, next) => {
     { _id: ObjectId(id) },
     { $set: newHuman },
     { returnOriginal: false },
-    (err, success) => err
-      ? res.json({ err })
-      : res.json({ data: success.value })
+    (err, success) => {
+      console.log('yay')
+      console.log(err)
+      console.log(success)
+      return err
+        ? res.json({ err })
+        : res.json({ data: success.value })
+    }
   )
 })
 

@@ -22,9 +22,15 @@
       <option value="NB">NB</option>
     </select><br /><br />
 
-    Date de naissance <input type="date" name="birth-date" /><br />
+    Date de naissance
+    <input type="number" name="birth-day" />
+    <input type="number" name="birth-month" />
+    <input type="number" name="birth-year" /><br />
     Lieu de naissance <input type="text" name="birth-place" /><br />
-    Date de décès <input type="date" name="death-date" /><br />
+    Date de décès
+    <input type="number" name="death-day" />
+    <input type="number" name="death-month" />
+    <input type="number" name="death-year" /><br />
     Lieu de décès <input type="text" name="death-place" /><br /><br />
 
     Parent 1 <select name="parent-1">
@@ -79,21 +85,27 @@
           const lastName = human.last_name
           const birthLastName = human.birth_last_name
           const gender = human.gender
-          const birthDate = human.birth_date
+          const birthDay = human.birth_day
+          const birthMonth = human.birth_month
+          const birthYear = human.birth_year
+          const birthDate = `${birthYear}-${birthMonth}-${birthDay}`
           const readableBirthDate = moment(birthDate, 'YYYY-MM-DD').fromNow() //.format('D MMM YYYY')
           const birthPlace = human.birth_place
-          const deathDate = human.death_date
+          const deathDay = human.death_day
+          const deathMonth = human.death_month
+          const deathYear = human.death_year
+          const deathDate = `${deathYear}-${deathMonth}-${deathDay}`
           const readableDeathDate = moment(deathDate, 'YYYY-MM-DD').fromNow() //.format('D MMM YYYY')
           const deathPlace = human.death_place
           const parent1 = human.parent_1
           const parent2 = human.parent_2
           const option = `<option value=${id}>
-            ${commonFirstName ||firstName} ${lastName ||birthLastName} (${readableBirthDate})
+            ${firstName} ${birthLastName} (${readableBirthDate})
           </option>`
           const humanSummary = `<p onclick="triggerEdition('${id}')">
-            ${commonFirstName || firstName} ${lastName || birthLastName} (${gender}), né·e ${firstName} ${birthLastName}<br />
+            ${firstName} ${birthLastName} (${gender})<br />
             🐣 ${readableBirthDate || '-'} à ${birthPlace || '-'},<br />
-            ${deathDate ? `⚰️ ${readableDeathDate || '-'} à ${deathPlace || '-'}<br />` : ''}
+            ⚰️ ${readableDeathDate || '-'} à ${deathPlace || '-'}<br />
             👩‍👩‍👧‍👦 ${getFullNameViaId(parent1) || '-'}, ${getFullNameViaId(parent2) || '-'}<br />
             <button onclick="triggerEdition('${id}')">Modifier</button>
           </p>`
@@ -112,9 +124,13 @@
         document.querySelector('input[name="last-name"]').value = ''
         document.querySelector('input[name="birth-last-name"]').value = ''
         document.querySelector('select[name="gender"]').value = ''
-        document.querySelector('input[name="birth-date"]').value = ''
+        document.querySelector('input[name="birth-day"]').value = ''
+        document.querySelector('input[name="birth-month"]').value = ''
+        document.querySelector('input[name="birth-year"]').value = ''
         document.querySelector('input[name="birth-place"]').value = ''
-        document.querySelector('input[name="death-date"]').value = ''
+        document.querySelector('input[name="death-day"]').value = ''
+        document.querySelector('input[name="death-month"]').value = ''
+        document.querySelector('input[name="death-year"]').value = ''
         document.querySelector('input[name="death-place"]').value = ''
         document.querySelector('select[name="parent-1"]').value = ''
         document.querySelector('select[name="parent-2"]').value = ''
@@ -127,9 +143,13 @@
         const lastName = document.querySelector('input[name="last-name"]').value
         const birthLastName = document.querySelector('input[name="birth-last-name"]').value
         const gender = document.querySelector('select[name="gender"]').value
-        const birthDate = document.querySelector('input[name="birth-date"]').value
+        const birthDay = document.querySelector('input[name="birth-day"]').value
+        const birthMonth = document.querySelector('input[name="birth-month"]').value
+        const birthYear = document.querySelector('input[name="birth-year"]').value
         const birthPlace = document.querySelector('input[name="birth-place"]').value
-        const deathDate = document.querySelector('input[name="death-date"]').value
+        const deathDay = document.querySelector('input[name="death-day"]').value
+        const deathMonth = document.querySelector('input[name="death-month"]').value
+        const deathYear = document.querySelector('input[name="death-year"]').value
         const deathPlace = document.querySelector('input[name="death-place"]').value
         const parent1 = document.querySelector('select[name="parent-1"]').value
         const parent2 = document.querySelector('select[name="parent-2"]').value
@@ -139,9 +159,13 @@
           last_name: lastName,
           birth_last_name: birthLastName,
           gender,
-          birth_date: birthDate,
+          birth_day: birthDay,
+          birth_month: birthMonth,
+          birth_year: birthYear,
           birth_place: birthPlace,
-          death_date: deathDate,
+          death_day: deathDay,
+          death_month: deathMonth,
+          death_year: deathYear,
           death_place: deathPlace,
           parent_1: parent1,
           parent_2: parent2
@@ -191,7 +215,7 @@
       function getFullNameViaId (id) {
         const human = getHumanViaId(id)
         if (!human) return
-        return `${human.common_first_name || human.first_name} ${human.last_name || human.birth_last_name}`
+        return `${human.first_name} ${human.birth_last_name}`
       }
 
       function triggerEdition (id) {
@@ -203,11 +227,15 @@
         document.querySelector('input[name="first-name"]').value = human.first_name
         document.querySelector('input[name="common-first-name"]').value = human.common_first_name
         document.querySelector('input[name="last-name"]').value = human.last_name
-        document.querySelector('input[name="birth-last-name"]').value = human.birt_last_name
+        document.querySelector('input[name="birth-last-name"]').value = human.birth_last_name
         document.querySelector('select[name="gender"]').value = human.gender
-        document.querySelector('input[name="birth-date"]').value = human.birth_date
+        document.querySelector('input[name="birth-day"]').value = human.birth_day
+        document.querySelector('input[name="birth-month"]').value = human.birth_month
+        document.querySelector('input[name="birth-year"]').value = human.birth_year
         document.querySelector('input[name="birth-place"]').value = human.birth_place
-        document.querySelector('input[name="death-date"]').value = human.death_date
+        document.querySelector('input[name="death-day"]').value = human.death_day
+        document.querySelector('input[name="death-month"]').value = human.death_month
+        document.querySelector('input[name="death-year"]').value = human.death_year
         document.querySelector('input[name="death-place"]').value = human.death_place
         document.querySelector('select[name="parent-1"]').value = human.parent_1
         document.querySelector('select[name="parent-2"]').value = human.parent_2
